@@ -1,0 +1,29 @@
+version: '3'
+services:
+  pg:
+    build:
+        context: pg
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_task
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5555:5432
+    volumes:
+        - ./pg/setup.sql:/docker-entrypoint-initdb.d/setup.sql:ro
+        - pg:/var/lib/postgresql/data
+  smtp:
+    build:
+        context: smtp
+    depends_on:
+      - pg
+    environment:
+      PGHOST: pg
+      PGPASSWORD: password
+      PGUSER: postgres
+    restart: unless-stopped
+volumes:
+  pg:
